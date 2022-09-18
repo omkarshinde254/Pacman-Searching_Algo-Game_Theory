@@ -72,6 +72,38 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+
+def DFSRecursion(problem, visited, return_array, node, action, isgoal):
+    #print 'In DFS Recursion'
+    #print 'For node- ', node
+    #print 'Return Array- ', return_array
+
+    # Define visited set
+    if not visited:
+        visited = set()
+        return_array = []
+    
+    if problem.isGoalState(node):
+        #print 'Reached Goal Node'
+        isgoal = True
+        return return_array.append(action), isgoal
+
+    # Add node in visited set
+    visited.add(node)
+    return_array.append(action)
+
+    # Loop through neighbours
+    neighbour = problem.getSuccessors(node)
+    for value in neighbour:
+        if value[0] not in visited:
+            array, isgoal = DFSRecursion(problem, visited, return_array, value[0], value[1], isgoal)
+    
+    if isgoal == False:
+        return_array.pop()
+        #print 'Popping-- '
+    return return_array, isgoal
+
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -87,7 +119,22 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from game import Directions
+
+    startnode = problem.getStartState()
+    #print "Start: ", startnode
+    #print "Is the start a goal?", problem.isGoalState(problem.getStartState())
+    #print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    return_array, goal = DFSRecursion(problem, None, None, startnode,'Stop', False)
+
+    #print 'Return Array in Main call- ', return_array
+    return return_array
+
+    
+
+
+
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
