@@ -74,19 +74,23 @@ def tinyMazeSearch(problem):
 
 
 def DFSRecursion(problem, visited, return_array, node, action, isgoal):
+    # Check if we have reached goal node
+    if isgoal:
+        return return_array, isgoal
+
+    if problem.isGoalState(node):
+        isgoal = True
+        return return_array.append(action), isgoal
+
     # Define visited set for first time
     if not visited:
         visited = set()
         return_array = []
     
-    # Check if we have reached goal node
-    if problem.isGoalState(node):
-        isgoal = True
-        return return_array.append(action), isgoal
-
     # Add node in visited set
     visited.add(node)
-    return_array.append(action)
+    if action:
+        return_array.append(action)
 
     # Loop through neighbours using DFS
     neighbour = problem.getSuccessors(node)
@@ -117,7 +121,7 @@ def depthFirstSearch(problem):
     from game import Directions
 
     startnode = problem.getStartState()
-    current_path, isGoal = DFSRecursion(problem, None, None, startnode, 'Stop', False)
+    current_path, isGoal = DFSRecursion(problem, None, None, startnode, '', False)
     return current_path
 
     
