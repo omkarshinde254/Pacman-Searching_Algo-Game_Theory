@@ -120,7 +120,6 @@ def BFSLogic(problem,start):
             break
         neighbours = problem.getSuccessors(state)
         for neighbour in neighbours:
-            print(neighbour)
             if(neighbour[0] not in visited):  # if not visited, add to array+path and don't visit again
                 visited.append(neighbour[0])
                 queue.push((neighbour[0], path + [neighbour[1]]))
