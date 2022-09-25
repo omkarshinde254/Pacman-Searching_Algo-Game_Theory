@@ -110,6 +110,7 @@ def BFSLogic(problem,start):
     queue = Queue()
     # push start state to the queue
     queue.push((start, []))
+    visited.append(start)
 
     while(queue):
         # move through the queue iteratively until goal state is found
