@@ -126,8 +126,6 @@ def BFSLogic(problem,start):
                 queue.push((neighbour[0], path + [neighbour[1]]))
     return path
 
-
-
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -149,7 +147,6 @@ def depthFirstSearch(problem):
     current_path, isGoal = DFSRecursion(problem, None, None, startnode, '', False)
     return current_path
 
-
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
@@ -162,7 +159,24 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    queue = util.PriorityQueue() # use a PriorityQueue to sort automatically according to least cost
+    visited = []
+    start = (problem.getStartState(), 0, [])  # start contains returned node, cost, and path
+    queue.push(start,0)
+
+    while not queue.isEmpty():
+        node, cost, path = queue.pop()
+        if problem.isGoalState(node):
+            break
+        if not node in visited:
+            visited.append(node)
+            for neighbour in problem.getSuccessors(node):
+                # explore cost of neighbouring nodes to original node and add it to path
+                node_cost = cost + neighbour[2]
+                new_path = path + [neighbour[1]]
+                new_state = (neighbour[0], node_cost, new_path)
+                queue.push(new_state,node_cost)
+    return path
 
 def nullHeuristic(state, problem=None):
     """
