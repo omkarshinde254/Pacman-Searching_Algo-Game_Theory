@@ -159,7 +159,8 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    queue = util.PriorityQueue() # use a PriorityQueue to sort automatically according to least cost
+    from util import PriorityQueue
+    queue = PriorityQueue() # use a PriorityQueue to sort automatically according to least cost
     visited = []
     start = (problem.getStartState(), 0, [])  # start contains returned node, cost, and path
     queue.push(start,0)
