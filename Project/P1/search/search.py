@@ -124,11 +124,6 @@ def depthFirstSearch(problem):
     current_path, isGoal = DFSRecursion(problem, None, None, startnode, '', False)
     return current_path
 
-    
-
-
-
-
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
@@ -147,10 +142,22 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-def aStarSearch(problem, heuristic=nullHeuristic):
+def aStarSearch(problem, heuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from searchAgents import manhattanHeuristic
+    heuristic = manhattanHeuristic
+
+    print 'In A*'
+    print "Start:", problem.getStartState()
+    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
+    print "Start's successors:", problem.getSuccessors(problem.getStartState())
+
+    print 'Heuristic --> ', heuristic(problem.getStartState(), problem)
+
+    return ['South']
+
+
 
 
 # Abbreviations
