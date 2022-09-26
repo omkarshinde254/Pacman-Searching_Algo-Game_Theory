@@ -172,10 +172,10 @@ def uniformCostSearch(problem):
             visited.append(node)
             for neighbour in problem.getSuccessors(node):
                 # explore cost of neighbouring nodes to original node and add it to path
-                node_cost = cost + neighbour[2]
+                # getSuccessors returns node with state tuple, action, cost
                 new_path = path + [neighbour[1]]
-                new_state = (neighbour[0], node_cost, new_path)
-                queue.push(new_state,node_cost)
+                new_state = (neighbour[0], problem.getCostOfActions(new_path), new_path)
+                queue.push(new_state,problem.getCostOfActions(new_path))
     return path
 
 def nullHeuristic(state, problem=None):
