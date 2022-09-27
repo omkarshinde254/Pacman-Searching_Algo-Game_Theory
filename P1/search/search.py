@@ -125,10 +125,8 @@ def depthFirstSearch(problem):
     return current_path
 
 def BFSLogic(problem,start):
-    from util import Queue
-
     visited = []
-    queue = Queue()
+    queue = util.Queue()
     # push start state to the queue
     queue.push((start, []))
     visited.append(start)
@@ -160,8 +158,7 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    from util import PriorityQueue
-    queue = PriorityQueue()
+    queue = util.PriorityQueue()
     visited = []
     start = (problem.getStartState(), 0, [])  # start contains returned node, cost, and path
     queue.push(start,0)
@@ -187,28 +184,27 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-def aStarSearch(problem):
+def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    from searchAgents import manhattanHeuristic
-    from util import PriorityQueue
 
     startnode = problem.getStartState()
     visited = []
-    queue = PriorityQueue()
-    queue.push((startnode, []), 0)
+    queue = util.PriorityQueue()
+    queue.push((startnode, [], 0), 0)
 
     while not queue.isEmpty():
-        node, path = queue.pop()
+        node, path, costOfAction = queue.pop()
         if problem.isGoalState(node):
             break
         elif node not in visited:
             visited.append(node)
             neighbours = problem.getSuccessors(node)
             for value in neighbours:
-                # Calculate manhattan and path cost
-                cost = problem.getCostOfActions([value[1]]) + manhattanHeuristic(value[0], problem)
-                queue.push((value[0], path + [value[1]]), cost) # Append absolute path in Priority Queue
+                # Calculate the past cost and add it with Manhattan
+                new_cost = costOfAction + value[2]
+                cost = new_cost + heuristic(value[0], problem)
+                queue.push((value[0], path + [value[1]], new_cost), cost) # Append absolute path in Priority Queue
     return path
 
 
