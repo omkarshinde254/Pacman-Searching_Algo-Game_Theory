@@ -103,6 +103,27 @@ def DFSRecursion(problem, visited, return_array, node, action, isgoal):
         return_array.pop()
     return return_array, isgoal
 
+def depthFirstSearch(problem):
+    """
+    Search the deepest nodes in the search tree first.
+
+    Your search algorithm needs to return a list of actions that reaches the
+    goal. Make sure to implement a graph search algorithm.
+
+    To get started, you might want to try some of these simple commands to
+    understand the search problem that is being passed in:
+
+    print "Start:", problem.getStartState()
+    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
+    print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    """
+    "*** YOUR CODE HERE ***"
+    from game import Directions
+
+    startnode = problem.getStartState()
+    current_path, isGoal = DFSRecursion(problem, None, None, startnode, '', False)
+    return current_path
+
 def BFSLogic(problem,start):
     from util import Queue
 
@@ -126,26 +147,6 @@ def BFSLogic(problem,start):
                 queue.push((neighbour[0], path + [neighbour[1]]))
     return path
 
-def depthFirstSearch(problem):
-    """
-    Search the deepest nodes in the search tree first.
-
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())
-    """
-    "*** YOUR CODE HERE ***"
-    from game import Directions
-
-    startnode = problem.getStartState()
-    current_path, isGoal = DFSRecursion(problem, None, None, startnode, '', False)
-    return current_path
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
@@ -160,7 +161,7 @@ def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
     from util import PriorityQueue
-    queue = PriorityQueue() # use a PriorityQueue to sort automatically according to least cost
+    queue = PriorityQueue()
     visited = []
     start = (problem.getStartState(), 0, [])  # start contains returned node, cost, and path
     queue.push(start,0)
@@ -186,20 +187,29 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-def aStarSearch(problem, heuristic):
+def aStarSearch(problem):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
     from searchAgents import manhattanHeuristic
-    heuristic = manhattanHeuristic
+    from util import PriorityQueue
 
-    print 'In A*'
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    startnode = problem.getStartState()
+    visited = []
+    queue = PriorityQueue()
+    queue.push((startnode, []), 0)
 
-    print 'Heuristic --> ', heuristic(problem.getStartState(), problem)
-
-    return ['South']
+    while not queue.isEmpty():
+        node, path = queue.pop()
+        if problem.isGoalState(node):
+            break
+        elif node not in visited:
+            visited.append(node)
+            neighbours = problem.getSuccessors(node)
+            for value in neighbours:
+                # Calculate manhattan and path cost
+                cost = problem.getCostOfActions([value[1]]) + manhattanHeuristic(value[0], problem)
+                queue.push((value[0], path + [value[1]]), cost) # Append absolute path in Priority Queue
+    return path
 
 
 
