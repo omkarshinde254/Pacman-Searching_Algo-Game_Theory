@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -112,6 +112,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
 
     def getAction(self, gameState):
+
         """
           Returns the minimax action from the current gameState using self.depth
           and self.evaluationFunction.
@@ -129,7 +130,44 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        pacman_moves = gameState.getLegalActions(0)
+        max_value = -float('inf')
+        action = ''
+        for i in pacman_moves:
+            # getting successor states and starting minimax by calling min
+            # return the maximum of the values returned
+            # return the action
+            successor_state = gameState.generateSuccessor(0,i)
+            value = self.minState(successor_state, 0,1)
+            if value > max_value:
+                max_value = value
+                action = i
+        return action
+
+    def minState(self, gameState, depth, agentIndex):
+        # check if gameState is at final state (win/lose) or proceed
+        numAgents = gameState.getNumAgents() - 1
+        legal_actions = gameState.getLegalActions(agentIndex)
+        if not len(legal_actions) or self.depth*gameState.getNumAgents() <= depth:
+            return self.evaluationFunction(gameState)
+        if agentIndex == numAgents: # call max for pacman's move
+            successors = [self.maxState(gameState.generateSuccessor(agentIndex, action), depth) for action in legal_actions]
+        else:  # it is ghost's turn. increment index and call min
+            successors = [self.minState(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1) for action in legal_actions]
+        return min(successors)
+
+    def maxState(self, gameState, depth):
+        legal_actions = gameState.getLegalActions(0)
+        if not len(legal_actions) or self.depth*gameState.getNumAgents() <= depth:
+            return self.evaluationFunction(gameState)
+        depth += 1
+        successors = [self.minState(gameState.generateSuccessor(0, action), depth, 1) for action in legal_actions]
+        return max(successors)
+
+
+
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -170,4 +208,3 @@ def betterEvaluationFunction(currentGameState):
 
 # Abbreviation
 better = betterEvaluationFunction
-
