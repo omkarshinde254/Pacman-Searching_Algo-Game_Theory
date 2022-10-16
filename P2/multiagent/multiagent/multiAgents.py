@@ -50,9 +50,9 @@ class ReflexAgent(Agent):
         chosenIndex = random.choice(bestIndices) # Pick randomly among the best
 
         "Add more of your code here if you want to"
-        print ("Scores-> ", scores)
-        print ("Best Scores-> ", bestScore)
-        print (legalMoves[chosenIndex])
+        # print ("Scores-> ", scores)
+        # print ("Best Scores-> ", bestScore)
+        # print (legalMoves[chosenIndex])
         return legalMoves[chosenIndex]
 
     def evaluationFunction(self, currentGameState, action):
@@ -91,6 +91,10 @@ class ReflexAgent(Agent):
           2. Go towards Food
         '''
 
+        # If Action is Stop then return default score
+        if action == 'Stop':
+          return successorGameState.getScore()
+
         # Logic -- 
         currScore = successorGameState.getScore()
 
@@ -102,13 +106,13 @@ class ReflexAgent(Agent):
         r_awayGhost = +5
         r_NearWall = 0
         r_nearFood = +3
-        r_mh_distance_multiplier = -0.1
+        r_mh_distance_multiplier = -0.01
 
         # Ghost position
         p_ghosts = []
         for ghostState in newGhostStates:
           p_ghosts.append([int(_) for _ in list(ghostState.getPosition())])
-        #print("Ghost States-> ", p_ghosts)
+        # print("Ghost States-> ", p_ghosts)
         
         # Packman position
         p_pacman = successorGameState.getPacmanPosition()
@@ -147,25 +151,6 @@ class ReflexAgent(Agent):
         # print("Nearest Food --> ", p_food_nearest)
         # print("Pacman New Position-> ", p_pacman_new_position)
 
-        '''
-        # Logic to Avoid Ghost and aim food
-        for np in p_pacman_new_position:
-          # Food Preference
-          if successorGameState.hasFood(np[0],np[1]):
-            currScore += r_nearFood
-          
-          for gp in p_ghosts:
-            if np == gp: # Ghost Preference
-              # print("Near Ghost")
-              currScore +=  r_nearGhost
-            elif successorGameState.hasWall(np[0],np[1]): # Wall Preference
-              currScore +=  r_NearWall
-            else:
-              #print("Away from ghost Ghost")
-              continue
-              # currScore = currScore + r_awayGhost
-        '''
-
         # Logic for score tracking
         for np in p_pacman_new_position:
 
@@ -180,8 +165,8 @@ class ReflexAgent(Agent):
             currScore += r_nearFood
           elif p_food:
             mh_distance = util.manhattanDistance(np,p_food_nearest)
-            currScore += mh_distance * r_mh_distance_multiplier
-            print("calc md")
+            currScore += (mh_distance * r_mh_distance_multiplier )
+            # print("calc md")
 
 
           # Wall Check
