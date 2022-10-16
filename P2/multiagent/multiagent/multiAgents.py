@@ -132,18 +132,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
 
         pacman_moves = gameState.getLegalActions(0)
-        max_value = -float('inf')
-        action = ''
-        for i in pacman_moves:
-            # getting successor states and starting minimax by calling min
-            # return the maximum of the values returned
-            # return the action
-            successor_state = gameState.generateSuccessor(0,i)
-            value = self.minState(successor_state, 0,1)
-            if value > max_value:
-                max_value = value
-                action = i
-        return action
+        bestScore = max([self.minState(gameState.generateSuccessor(1,action),0,1) for action in pacman_moves])
+        for i in range(len(pacman_moves)):
+            if pacman_moves[i] == bestScore:
+                return pacman_moves[i]
+
 
     def minState(self, gameState, depth, agentIndex):
         # check if gameState is at final state (win/lose) or proceed
