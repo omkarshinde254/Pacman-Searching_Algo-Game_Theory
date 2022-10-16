@@ -149,7 +149,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # check if gameState is at final state (win/lose) or proceed
         numAgents = gameState.getNumAgents() - 1
         legal_actions = gameState.getLegalActions(agentIndex)
-        if not len(legal_actions) or self.depth*gameState.getNumAgents() <= depth:
+        if not len(legal_actions) or self.depth == depth:
             return self.evaluationFunction(gameState)
         if agentIndex == numAgents: # call max for pacman's move
             successors = [self.maxState(gameState.generateSuccessor(agentIndex, action), depth) for action in legal_actions]
@@ -159,7 +159,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     def maxState(self, gameState, depth):
         legal_actions = gameState.getLegalActions(0)
-        if not len(legal_actions) or self.depth*gameState.getNumAgents() <= depth:
+        if not len(legal_actions) or self.depth == depth:
             return self.evaluationFunction(gameState)
         depth += 1
         successors = [self.minState(gameState.generateSuccessor(0, action), depth, 1) for action in legal_actions]
