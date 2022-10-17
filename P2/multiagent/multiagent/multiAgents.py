@@ -13,7 +13,9 @@
 
 
 import imp
+import re
 from time import sleep
+from traceback import print_tb
 from util import manhattanDistance
 from game import Directions
 import random, util
@@ -261,7 +263,81 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        '''
+          1. Make a tree of scores
+          2. apply max and avg to that tree.
+          3. root should be max
+          4. return action with max score
+        '''
+
+        # print("In Expecti Max function")
+        legalMoves = gameState.getLegalActions()
+        # print("Legal Moves- ", legalMoves)
+        # print("Num of Agents- ", gameState.getNumAgents())
+
+        scores = []
+        isMax = False
+        self.depth = 4
+        print ("Depth in Question- ", self.depth)
+
+        for action in legalMoves:
+          visited = []
+          # print("Checking for action-- ", action)
+          successorGameState = gameState.generateSuccessor(0, action)
+          scores.append(self.expectiMax(successorGameState, visited, isMax, 0))
+        
+        print("Score==> ", scores)
+        maxidx = scores.index(max(scores))
+        print ("Move==> ",legalMoves[maxidx])
+        return legalMoves[maxidx]
+
+    
+    def expectiMax(self, gameState, visited, isMax, myDepth):
+      # sleep(0.5)
+      # currPos = self.gameState.getPacmanPosition()
+      # currPos = gameState.getPosition()
+      # print("Curr Poss-- ", currPos)
+
+      if gameState.isLose() or gameState.isWin():
+        return self.evaluationFunction(gameState)
+      
+      if myDepth == self.depth:
+        # print("Depth- ", myDepth)
+        print("Value- ", self.evaluationFunction(gameState))
+        return self.evaluationFunction(gameState)
+
+      # if currPos in visited:
+      #   return self.evaluationFunction(gameState)
+      # else:
+      #   visited.append(currPos)
+
+      ss_legalMoves = gameState.getLegalActions()
+      myDepth += 1
+      print("Curr Depth- ", myDepth)
+
+      if isMax:
+        isMax = False
+        # print("Max")
+        arr =  [ self.expectiMax(gameState.generateSuccessor(0, action), visited, isMax, myDepth) for action in ss_legalMoves]
+        print ("Max Arr- ", arr)
+        return max ( arr )
+        # score = []
+        # for action in ss_legalMoves:
+          # score.append(self.expectiMax(gameState.generatePacmanSuccessor(action), visited, isMax, depth))
+        # print("Score- ", score)
+        # return max(score)
+      else:
+        isMax = True
+        # print("Avg")
+        arr = [ self.expectiMax(gameState.generateSuccessor(0, action), visited, isMax, myDepth) for action in ss_legalMoves ]
+        print ("Avg Arr- ", arr)
+        return sum(arr)/float(len(ss_legalMoves))
+        # score = []
+        # for action in ss_legalMoves:
+          # score.append(self.expectiMax(gameState.generatePacmanSuccessor(action), visited, isMax, depth))
+        # print("Score- ", score)
+        # return (sum(score)/float(len(score)))
+
 
 def betterEvaluationFunction(currentGameState):
     """
