@@ -81,20 +81,22 @@ class ReflexAgent(Agent):
         # newPos = successorGameState.getPacmanPosition()
         newFood = list(successorGameState.getFood())[1:-1]
         newGhostStates = successorGameState.getGhostStates()
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        # newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        #print ("New Position is- ", newPos)
-        # print("Has Food- ", currentGameState.hasFood(newPos[0], newPos[1]))
-        # print ("Score-> ", successorGameState.getScore())
-
         '''
         Strategy- 
           1. Stay alive, avoid ghost for 1 box
             - any action that keeps me near ghost is bad -5
-            - any action that gets me away from ghost is good +5
           2. Go towards Food
+            - any action that gets me near food is good
+          3. Don't stay near walls:
+            - Maybe-- anything that keeps me away from borders is good.
         '''
+
+        #print ("New Position is- ", newPos)
+        # print("Has Food- ", currentGameState.hasFood(newPos[0], newPos[1]))
+        # print ("Score-> ", successorGameState.getScore())
 
         # If Action is Stop then return default score
         if action == 'Stop':
@@ -103,15 +105,15 @@ class ReflexAgent(Agent):
         # Logic -- 
         currScore = successorGameState.getScore()
 
-        # Pacman Zone
+        # Pacman Zone- check # unit around me
         z_reflex = 1
 
         # Rewards --
         r_nearGhost = -5
         r_awayGhost = +5
-        r_NearWall = 0
+        r_NearWall = 0  # avoid wall reward is set to 0
         r_nearFood = +3
-        r_mh_distance_multiplier = -0.01
+        r_mh_distance_multiplier = -0.01 # manhattan dist multiplier
 
         # Ghost position
         p_ghosts = []
@@ -125,7 +127,9 @@ class ReflexAgent(Agent):
         p_y = p_pacman[1]
         p_pacman_new_position = []
 
-        # Avoid Ghost Logic:
+
+        # Get locations here --
+        # Avoid Ghost Locations
         for x in range(-z_reflex,z_reflex):
           for y in range(-z_reflex,z_reflex):
             if x == 0 and y == 0:
@@ -133,7 +137,7 @@ class ReflexAgent(Agent):
             p_pacman_new_position.append([p_x + x, p_y + y])
       
         
-        # Food position
+        # Get Food Locations
         p_food = []
         x_fctr = 1
         for x in newFood:
@@ -144,46 +148,40 @@ class ReflexAgent(Agent):
             y_fctr += 1
           x_fctr += 1
         
-        #p_food.sort()
-        #print ("Food --> ", p_food)
-        # Get nearest food (Euclidean Distance)
-        #print ("P Pacman-- ", p_pacman)
-        #print ("P Pacman-- ", p_food)
+
+        # Get eucledian distance of those food locations, to prefer nearest food.
         if p_food:
           p_food_nearest = min(p_food, key=lambda x: math.hypot(x[0] - p_pacman[0], x[1] - p_pacman[1]))
 
-        # print("Pacman Current Position-> ", p_pacman)
-        # print("Nearest Food --> ", p_food_nearest)
-        # print("Pacman New Position-> ", p_pacman_new_position)
 
-        # Logic for score tracking
+        # Edit Score Here --
         for np in p_pacman_new_position:
-
-          # Ghost check
+          # ---  Avoid Ghost ---
           if np in p_ghosts:
             currScore += r_nearGhost
           else:
             currScore += r_awayGhost
 
-          # Food Check near me
+          # --- Prefer Food ---
           if successorGameState.hasFood(*np):
-            currScore += r_nearFood
+            # For food near me
+            currScore += r_nearFood 
           elif p_food:
+            # For food away from me
             mh_distance = util.manhattanDistance(np,p_food_nearest)
             currScore += (mh_distance * r_mh_distance_multiplier )
             # print("calc md")
 
-
-          # Wall Check
+          # --- Avoid Walls ---
           if successorGameState.hasWall(*np):
             currScore += r_NearWall
 
 
-        # TODO
+        # TODO- comment sleep
         #sleep(0.1)
 
         # return successorGameState.getScore()
-        #print(currScore)
+        # print(currScore)
         return currScore
 
 def scoreEvaluationFunction(currentGameState):
@@ -267,35 +265,11 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         '''
-          1. Make a tree of scores
-          2. apply max and avg to that tree.
-          3. root should be max
-          4. return action with max score
-        '''
-
-
-        '''
-        legalMoves = gameState.getLegalActions()
-        # print ("Legal Moves- ", legalMoves)
-
-        scores = []
-        # isMax = False
-        isMin = True
-        exp = "Avg"
-        agent_val = 0
-        myDepth = 0
-
-        for action in legalMoves:
-          scores.append(self.expectiMax(gameState.generateSuccessor(0, action), agent_val, myDepth))
-        
-        print("Score==> ", scores)
-        bestScore = max(scores)
-        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
-        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
-
-        print("Max Score-> ", bestScore)
-        print (legalMoves[chosenIndex])
-        return legalMoves[chosenIndex]
+        Strategy-
+          1. First move is pacman move
+          2. Apply max to it
+          3. Then perform ghost moves for thier num of agents
+          4. Apply avg to it
         '''
 
         currAgent = 0
@@ -303,6 +277,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         score = []
         legalMoves = gameState.getLegalActions(currAgent)
 
+        # First Move is always pacman move
         for action in legalMoves:
           score.append( self.expectiMax(gameState.generateSuccessor(currAgent, action), 1, myDepth ))
         
@@ -314,8 +289,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       
     
     def expectiMax(self, gameState, currAgent, myDepth):
-
-      # Terminal State
+      # Terminal States 
       
       # For win or lose
       if gameState.isWin() or gameState.isLose():
@@ -326,11 +300,13 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         return scoreEvaluationFunction(gameState)
       
 
+      # Pacman Move
       if currAgent == 0:
         # print ("Max Agent- ", currAgent)
         return max( [ self.expectiMax(gameState.generateSuccessor(currAgent, action), currAgent+1, myDepth) for action in gameState.getLegalActions(currAgent)] )
       
       else:
+        # Ghost Move
         # print("Avg Agent- ", currAgent)
         
         if currAgent == gameState.getNumAgents() - 1:
@@ -339,119 +315,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         else:
           nxtAgent = currAgent + 1
 
-        score =  sum( [ self.expectiMax(gameState.generateSuccessor(currAgent, action), nxtAgent, myDepth) for action in gameState.getLegalActions(currAgent) ] )/ float(len(gameState.getLegalActions(currAgent)))
+        return sum( [ self.expectiMax(gameState.generateSuccessor(currAgent, action), nxtAgent, myDepth) for action in gameState.getLegalActions(currAgent) ] )/ float(len(gameState.getLegalActions(currAgent)))
 
-        # currAgent = currAgent + 1
-        return score
-
-      
-
-
-
-'''
-    def expectiMax(self, gameState, agent_val, myDepth):
-      # Depth Check
-      if myDepth == self.depth:
-        # print ("-- Depth --")
-        return scoreEvaluationFunction(gameState)
-
-      # Check for win or lose
-      if gameState.isWin() or gameState.isLose():
-        print ("=======================================================================")
-        return scoreEvaluationFunction(gameState)
-      
-      agent_val = agent_val + 1
-      
-      # Check if there are possible actions
-      # if gameState.getLegalActions() == [] or gameState.getLegalActions(1) == []:
-        # print ("***********************************************************************")
-        # return scoreEvaluationFunction(gameState)
-      
-      ####
-      # pacman turn
-      if agent_val == 0:
-        print("Max --> ", agent_val)
-        myDepth = myDepth + 1
-
-        score = []
-        for action in gameState.getLegalActions(0):
-            score.append( self.expectiMax(gameState.generateSuccessor(0, action), 1, myDepth) )
-        
-        return max( score )
-      
-      else:
-        ####
-        # Ghost turn
-        print("AVG --> ", agent_val)
-        if agent_val == gameState.getNumAgents():
-          agent_val = 0
-
-        score = []
-        for action in gameState.getLegalActions(1):
-            score.append( self.expectiMax(gameState.generateSuccessor(1, action), agent_val, myDepth) )
-        
-        return ( sum(score)/float(len(score)) )
-
-    
-    def expectiMax1(self, gameState, visited, isMax, isMin, myDepth):
-      myDepth += 0.5
-      # sleep(0.5)
-      # currPos = self.index.getPacmanPosition()
-      # currPos = gameState.getPacmanPosition()
-      # print("Game State-- ", gameState.getNumAgents())
-      
-      if myDepth == self.depth:
-        # print("Depth- ", myDepth)
-        # print("Depth Values- ", self.evaluationFunction(gameState))
-        return scoreEvaluationFunction(gameState)
-
-
-      if gameState.isLose() or gameState.isWin():
-        # print("win or lose- ", self.evaluationFunction(gameState))
-        return scoreEvaluationFunction(gameState)
-
-      # if currPos in visited:
-      #   return self.evaluationFunction(gameState)
-      # else:
-      #   visited.append(currPos)
-
-      ss_legalMoves = gameState.getLegalActions()
-      # print("Curr Depth- ", myDepth)
-
-      if isMax:
-        isMax = False
-        # print("Max")
-        # myDepth += 0.5
-        arr =  [ self.expectiMax(gameState.generateSuccessor(0, action), visited, isMax, isMin, myDepth) for action in ss_legalMoves]
-
-        # myDepth += 0.5
-        if isMin:
-          # print ("Min Arr- ", arr)
-          isMin = False
-          return min( arr )
-        isMin = True
-        # print ("Max Arr- ", arr)
-        return max ( arr )
-        # score = []
-        # for action in ss_legalMoves:
-          # score.append(self.expectiMax(gameState.generatePacmanSuccessor(action), visited, isMax, depth))
-        # print("Score- ", score)
-        # return max(score)
-      else:
-        isMax = True
-        # print("Avg")
-        # myDepth += 0.5
-        arr = [ self.expectiMax(gameState.generateSuccessor(0, action), visited, isMax, isMin, myDepth) for action in ss_legalMoves ]
-        # print ("Avg Arr- ", arr)
-        
-        # myDepth += 0.5
-        return sum(arr)/float(len(arr))
-        # score = []
-        # for action in ss_legalMoves:
-          # score.append(self.expectiMax(gameState.generatePacmanSuccessor(action), visited, isMax, depth))
-        # print("Score- ", score)
-        # return (sum(score)/float(len(score)))
-'''
 
 def betterEvaluationFunction(currentGameState):
     """
