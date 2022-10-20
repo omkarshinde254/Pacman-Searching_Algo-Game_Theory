@@ -85,7 +85,7 @@ class ReflexAgent(Agent):
 
         "*** YOUR CODE HERE ***"
         '''
-        Strategy- 
+        Strategy-
           1. Stay alive, avoid ghost for 1 box
             - any action that keeps me near ghost is bad -5
           2. Go towards Food
@@ -102,7 +102,7 @@ class ReflexAgent(Agent):
         if action == 'Stop':
           return successorGameState.getScore()
 
-        # Logic -- 
+        # Logic --
         currScore = successorGameState.getScore()
 
         # Pacman Zone- check # unit around me
@@ -120,7 +120,7 @@ class ReflexAgent(Agent):
         for ghostState in newGhostStates:
           p_ghosts.append([int(_) for _ in list(ghostState.getPosition())])
         # print("Ghost States-> ", p_ghosts)
-        
+
         # Packman position
         p_pacman = successorGameState.getPacmanPosition()
         p_x = p_pacman[0]
@@ -135,8 +135,8 @@ class ReflexAgent(Agent):
             if x == 0 and y == 0:
               continue
             p_pacman_new_position.append([p_x + x, p_y + y])
-      
-        
+
+
         # Get Food Locations
         p_food = []
         x_fctr = 1
@@ -147,7 +147,7 @@ class ReflexAgent(Agent):
               p_food.append([x_fctr, y_fctr])
             y_fctr += 1
           x_fctr += 1
-        
+
 
         # Get eucledian distance of those food locations, to prefer nearest food.
         if p_food:
@@ -165,7 +165,7 @@ class ReflexAgent(Agent):
           # --- Prefer Food ---
           if successorGameState.hasFood(*np):
             # For food near me
-            currScore += r_nearFood 
+            currScore += r_nearFood
           elif p_food:
             # For food away from me
             mh_distance = util.manhattanDistance(np,p_food_nearest)
@@ -276,7 +276,68 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        pacman_moves = gameState.getLegalActions(0)
+        min_val = float('inf')
+        min_counter = 0
+        bestScore = [self.minState(gameState.generateSuccessor(0,action), 0,1,min_val,min_counter) for action in pacman_moves]
+        bestIndex = bestScore.index(max(bestScore))
+        return pacman_moves[bestIndex]
+
+
+    def minState(self, gameState, depth, agentIndex, min_val, min_counter):
+        # check if gameState is at final state (win/lose) or proceed
+        numAgents = gameState.getNumAgents()
+        legal_actions = gameState.getLegalActions(agentIndex)
+        if gameState.isWin() or gameState.isLose() or self.depth == depth:
+            return scoreEvaluationFunction(gameState)
+        if agentIndex == numAgents-1: # call max for pacman's move
+            depth += 1
+            successors =[]
+            max_val = -float('inf')
+            counter = 0
+            # successors = [self.maxState(gameState.generateSuccessor(agentIndex, action), depth) for action in legal_actions]
+            for action in legal_actions:
+                value = self.maxState(gameState.generateSuccessor(agentIndex,action),depth, max_val, counter)
+                successors.append(value[0])
+                max_val = value[1]
+                counter = value[2]
+
+
+        else:  # it is ghost's turn. increment index and call min
+            successors = []
+            for action in legal_actions:
+                value = self.minState(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1, min_val, min_counter)
+                if not min_counter:
+                    min_val = value
+                    min_counter +=1
+                elif min_val < value:
+                    min_val = value
+                    return [min_val, min_val, min_counter]
+                successors.append(value)
+        return [min(successors),min_val,min_counter]
+
+    def maxState(self, gameState, depth, max_val, counter):
+        legal_actions = gameState.getLegalActions(0)
+        if gameState.isWin() or gameState.isLose() or self.depth == depth:
+            return scoreEvaluationFunction(gameState)
+        successors =[]
+        min_val = float('inf')
+        min_counter = 0
+        for action in legal_actions:
+            print(min_val)
+            print(min_counter)
+            value = self.minState(gameState.generateSuccessor(0, action), depth, 1, min_val,min_counter)
+            print(value)
+            min_val = value[1]
+            min_counter = value[2]
+            if not counter:
+                max_val = value
+                counter +=1
+            elif max_val < value:
+                max_val = value
+                return [max_val, max_val, counter]
+            successors.append(value)
+        return [max(successors), max_val, counter]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -307,35 +368,35 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         # First Move is always pacman move
         for action in legalMoves:
           score.append( self.expectiMax(gameState.generateSuccessor(currAgent, action), 1, myDepth ))
-        
+
         bestScoreIdx = score.index( max(score) )
         # print ("Score-- ",score)
         # print ("Move-- ", legalMoves[bestScoreIdx])
 
         return legalMoves[bestScoreIdx]
-      
-    
+
+
     def expectiMax(self, gameState, currAgent, myDepth):
-      # Terminal States 
-      
+      # Terminal States
+
       # For win or lose
       if gameState.isWin() or gameState.isLose():
         return scoreEvaluationFunction(gameState)
-      
+
       # For depth
       if myDepth == self.depth:
         return scoreEvaluationFunction(gameState)
-      
+
 
       # Pacman Move
       if currAgent == 0:
         # print ("Max Agent- ", currAgent)
         return max( [ self.expectiMax(gameState.generateSuccessor(currAgent, action), currAgent+1, myDepth) for action in gameState.getLegalActions(currAgent)] )
-      
+
       else:
         # Ghost Move
         # print("Avg Agent- ", currAgent)
-        
+
         if currAgent == gameState.getNumAgents() - 1:
           nxtAgent = 0
           myDepth = myDepth + 1
