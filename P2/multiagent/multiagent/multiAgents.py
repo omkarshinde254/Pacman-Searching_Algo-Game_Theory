@@ -132,19 +132,19 @@ class MinimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
 
         pacman_moves = gameState.getLegalActions(0)
-        bestScore = max([self.minState(gameState.generateSuccessor(1,action),0,1) for action in pacman_moves])
-        for i in range(len(pacman_moves)):
-            if pacman_moves[i] == bestScore:
-                return pacman_moves[i]
+        bestScore = [self.minState(gameState.generateSuccessor(0,action), 0,1) for action in pacman_moves]
+        bestIndex = bestScore.index(max(bestScore))
+        return pacman_moves[bestIndex]
 
 
     def minState(self, gameState, depth, agentIndex):
         # check if gameState is at final state (win/lose) or proceed
-        numAgents = gameState.getNumAgents() - 1
+        numAgents = gameState.getNumAgents()
         legal_actions = gameState.getLegalActions(agentIndex)
-        if not len(legal_actions) or self.depth == depth:
-            return self.evaluationFunction(gameState)
-        if agentIndex == numAgents: # call max for pacman's move
+        if gameState.isWin() or gameState.isLose() or self.depth == depth:
+            return scoreEvaluationFunction(gameState)
+        if agentIndex == numAgents-1: # call max for pacman's move
+            depth += 1
             successors = [self.maxState(gameState.generateSuccessor(agentIndex, action), depth) for action in legal_actions]
         else:  # it is ghost's turn. increment index and call min
             successors = [self.minState(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1) for action in legal_actions]
@@ -152,14 +152,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     def maxState(self, gameState, depth):
         legal_actions = gameState.getLegalActions(0)
-        if not len(legal_actions) or self.depth == depth:
-            return self.evaluationFunction(gameState)
-        depth += 1
+        if gameState.isWin() or gameState.isLose() or self.depth == depth:
+            return scoreEvaluationFunction(gameState)
         successors = [self.minState(gameState.generateSuccessor(0, action), depth, 1) for action in legal_actions]
         return max(successors)
-
-
-
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
