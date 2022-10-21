@@ -276,15 +276,29 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
+        alpha = -float('inf')
+        beta = float('inf')
         pacman_moves = gameState.getLegalActions(0)
-        min_val = float('inf')
-        min_counter = 0
-        bestScore = [self.minState(gameState.generateSuccessor(0,action), 0,1,min_val,min_counter) for action in pacman_moves]
+        bestScore = []
+        currbest = -float('inf')
+
+        for action in pacman_moves:
+          score = self.minState(gameState.generateSuccessor(0,action), 0,1, alpha, beta)
+          bestScore.append(score)
+          currbest = max(score, currbest)
+          alpha = max(alpha, currbest)
+          # print ("Alpha- ", alpha)
+
+          if alpha > beta:
+            # print ("Max -- Purning --")
+            break
+
         bestIndex = bestScore.index(max(bestScore))
         return pacman_moves[bestIndex]
 
 
-    def minState(self, gameState, depth, agentIndex, min_val, min_counter):
+    def minState(self, gameState, depth, agentIndex, alpha, beta):
+        currbest = float('inf')
         # check if gameState is at final state (win/lose) or proceed
         numAgents = gameState.getNumAgents()
         legal_actions = gameState.getLegalActions(agentIndex)
@@ -292,52 +306,54 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             return scoreEvaluationFunction(gameState)
         if agentIndex == numAgents-1: # call max for pacman's move
             depth += 1
-            successors =[]
-            max_val = -float('inf')
-            counter = 0
-            # successors = [self.maxState(gameState.generateSuccessor(agentIndex, action), depth) for action in legal_actions]
+            # successors = []
             for action in legal_actions:
-                value = self.maxState(gameState.generateSuccessor(agentIndex,action),depth, max_val, counter)
-                successors.append(value[0])
-                max_val = value[1]
-                counter = value[2]
+              score = self.maxState(gameState.generateSuccessor(agentIndex, action), depth, alpha, beta)
+              currbest = min(score, currbest)
+              beta = min(beta, currbest)
+              # print ("Beta- ", beta)
 
+              if alpha > beta:
+                # print ("Min -- Purning --")
+                break
 
+              # successors.append()
         else:  # it is ghost's turn. increment index and call min
-            successors = []
+            # successors = []
             for action in legal_actions:
-                value = self.minState(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1, min_val, min_counter)
-                if not min_counter:
-                    min_val = value
-                    min_counter +=1
-                elif min_val < value:
-                    min_val = value
-                    return [min_val, min_val, min_counter]
-                successors.append(value)
-        return [min(successors),min_val,min_counter]
+              score = self.minState(gameState.generateSuccessor(agentIndex, action), depth, agentIndex+1, alpha, beta)
+              currbest = min(score, currbest)
+              beta = min(beta, currbest)
+              # print ("Beta- ", beta)
 
-    def maxState(self, gameState, depth, max_val, counter):
+              if alpha > beta:
+                # print ("Min -- Purning --")
+                break
+              # successors.append()
+
+        return currbest
+        # return min(successors)
+
+    def maxState(self, gameState, depth, alpha, beta):
+        currbest = -float('inf')
         legal_actions = gameState.getLegalActions(0)
         if gameState.isWin() or gameState.isLose() or self.depth == depth:
             return scoreEvaluationFunction(gameState)
-        successors =[]
-        min_val = float('inf')
-        min_counter = 0
+        
+        # successors = []
         for action in legal_actions:
-            print(min_val)
-            print(min_counter)
-            value = self.minState(gameState.generateSuccessor(0, action), depth, 1, min_val,min_counter)
-            print(value)
-            min_val = value[1]
-            min_counter = value[2]
-            if not counter:
-                max_val = value
-                counter +=1
-            elif max_val < value:
-                max_val = value
-                return [max_val, max_val, counter]
-            successors.append(value)
-        return [max(successors), max_val, counter]
+          score = self.minState(gameState.generateSuccessor(0, action), depth, 1, alpha, beta)
+          currbest = max(score, currbest)
+          alpha = max(alpha, currbest)
+          # print ("Alpha- ", alpha)
+
+          if alpha > beta:
+            # print ("Max -- Purning --")
+            break
+          
+          # successors.append(val)
+        return currbest
+        # return max(successors)
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
